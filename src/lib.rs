@@ -986,8 +986,179 @@ pub unsafe extern "C" fn file_move(from: *const c_char,
     Box::into_raw(Box::new(result))
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn copy_items(from_list: *const *const c_char,
+                                    from_size: size_t,
+                                    to: *const c_char,
+                                    options: *mut CopyOptions)
+                                    -> *mut MoveResult {
+    let options = &mut *options;
+    let from = std::slice::from_raw_parts(from_list, from_size);
+    let mut from_list = Vec::new();
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+
+    for path in from {
+        if let Some(path) = path.as_ref() {
+            match CStr::from_ptr(path).to_str() {
+                Ok(val) => from_list.push(val),
+                Err(msg) => {
+                    is_error = true;
+                    break;
+                }
+            }
+        } else {
+            is_error = true;
+            break;
+
+        }
+    }
+
+    if is_error {
+        err = Error {
+            kind: get_c_string("Invalid from path").into_raw(),
+            message: get_c_string("Invalid from path").into_raw(),
+        };
+
+    };
+
+    let options = dir::CopyOptions {
+        overwrite: options.overwrite,
+        skip_exist: options.skip_exist,
+        buffer_size: options.buffer_size,
+    };
+
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+    let mut result = 0;
+    let to_path: &str;
+
+    match CStr::from_ptr(to).to_str() {
+        Ok(val) => to_path = val,
+        Err(msg) => {
+            to_path = "";
+            is_error = true;
+            err = Error {
+                kind: get_c_string("Invalid to path").into_raw(),
+                message: get_c_string("Invalid to path").into_raw(),
+            };
+        }
+    }
+
+
+    if !is_error {
+        match fs_extra::copy_items(&from_list, to_path, &options) {
+            Ok(copied_bytes) => {
+                result = copied_bytes;
+            }
+            Err(err_item) => {
+                is_error = true;
+                err = Error {
+                    kind: get_c_string(format!("{:?}", err_item.kind).as_str()).into_raw(),
+                    message: get_c_string(format!("{}", err_item.to_string()).as_str()).into_raw(),
+                }
+            }
+        }
+    }
+    let result = MoveResult {
+        is_error: is_error,
+        error: err,
+        ok: result,
+    };
+    Box::into_raw(Box::new(result))
+}
+
 
 #[no_mangle]
-pub unsafe extern "C" fn file_move_free(value: *mut DetailsEntryResult) {
-    Box::from_raw(value);
+pub unsafe extern "C" fn move_items(from_list: *const *const c_char,
+                                    from_size: size_t,
+                                    to: *const c_char,
+                                    options: *mut CopyOptions)
+                                    -> *mut MoveResult {
+    let options = &mut *options;
+    let from = std::slice::from_raw_parts(from_list, from_size);
+    let mut from_list = Vec::new();
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+
+    for path in from {
+        if let Some(path) = path.as_ref() {
+            match CStr::from_ptr(path).to_str() {
+                Ok(val) => from_list.push(val),
+                Err(msg) => {
+                    is_error = true;
+                    break;
+                }
+            }
+        } else {
+            is_error = true;
+            break;
+
+        }
+    }
+
+    if is_error {
+        err = Error {
+            kind: get_c_string("Invalid from path").into_raw(),
+            message: get_c_string("Invalid from path").into_raw(),
+        };
+
+    };
+
+    let options = dir::CopyOptions {
+        overwrite: options.overwrite,
+        skip_exist: options.skip_exist,
+        buffer_size: options.buffer_size,
+    };
+
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+    let mut result = 0;
+    let to_path: &str;
+
+    match CStr::from_ptr(to).to_str() {
+        Ok(val) => to_path = val,
+        Err(msg) => {
+            to_path = "";
+            is_error = true;
+            err = Error {
+                kind: get_c_string("Invalid to path").into_raw(),
+                message: get_c_string("Invalid to path").into_raw(),
+            };
+        }
+    }
+
+
+    if !is_error {
+        match fs_extra::move_items(&from_list, to_path, &options) {
+            Ok(copied_bytes) => {
+                result = copied_bytes;
+            }
+            Err(err_item) => {
+                is_error = true;
+                err = Error {
+                    kind: get_c_string(format!("{:?}", err_item.kind).as_str()).into_raw(),
+                    message: get_c_string(format!("{}", err_item.to_string()).as_str()).into_raw(),
+                }
+            }
+        }
+    }
+    let result = MoveResult {
+        is_error: is_error,
+        error: err,
+        ok: result,
+    };
+    Box::into_raw(Box::new(result))
 }
