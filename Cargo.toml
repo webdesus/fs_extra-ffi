@@ -1,0 +1,25 @@
+[package]
+name = "fs_extra-ffi"
+version = "0.1.0"
+description = "Wrapper for fs_extra" 
+license = "MIT"
+authors = ["Denis Kurilenko <webdesus@gmail.com>"]
+keywords = ["filesystem", "recursion", "copy", "ffi"]
+homepage = "https://github.com/webdesus/fs_extra-ffi"
+documentation = "https://docs.rs/fs_extra-ffi"
+repository = "https://github.com/webdesus/fs_extra-ffi"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md",
+]
+
+[lib]
+name = "fs_extra_ffi"
+crate-type = ["dylib"]
+
+[dependencies]
+libc = "^0.2.21"
+fs_extra = "^1.0.0"
