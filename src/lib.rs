@@ -415,17 +415,24 @@ pub struct CopyOptions {
     buffer_size: size_t,
 }
 
-pub struct MoveResult {
+pub struct U64Result {
     is_error: bool,
     error: Error,
     ok: uint64_t,
 }
 
+pub struct CStringResult {
+    is_error: bool,
+    error: Error,
+    ok: *const c_char,
+}
+
+
 #[no_mangle]
 pub unsafe extern "C" fn dir_copy(from: *const c_char,
                                   to: *const c_char,
                                   options: *mut CopyOptions)
-                                  -> *mut MoveResult {
+                                  -> *mut U64Result {
     let options = &mut *options;
     let options = dir::CopyOptions {
         overwrite: options.overwrite,
@@ -478,7 +485,7 @@ pub unsafe extern "C" fn dir_copy(from: *const c_char,
             }
         }
     }
-    let result = MoveResult {
+    let result = U64Result {
         is_error: is_error,
         error: err,
         ok: result,
@@ -493,7 +500,7 @@ pub unsafe extern "C" fn dir_copy(from: *const c_char,
 pub unsafe extern "C" fn dir_move(from: *const c_char,
                                   to: *const c_char,
                                   options: *mut CopyOptions)
-                                  -> *mut MoveResult {
+                                  -> *mut U64Result {
     let options = &mut *options;
     let options = dir::CopyOptions {
         overwrite: options.overwrite,
@@ -546,7 +553,7 @@ pub unsafe extern "C" fn dir_move(from: *const c_char,
             }
         }
     }
-    let result = MoveResult {
+    let result = U64Result {
         is_error: is_error,
         error: err,
         ok: result,
@@ -556,7 +563,7 @@ pub unsafe extern "C" fn dir_move(from: *const c_char,
 
 
 #[no_mangle]
-pub unsafe extern "C" fn move_result_free(value: *mut MoveResult) {
+pub unsafe extern "C" fn move_result_free(value: *mut U64Result) {
     Box::from_raw(value);
 }
 
@@ -565,7 +572,7 @@ pub unsafe extern "C" fn move_result_free(value: *mut MoveResult) {
 pub unsafe extern "C" fn file_copy(from: *const c_char,
                                    to: *const c_char,
                                    options: *mut CopyOptions)
-                                   -> *mut MoveResult {
+                                   -> *mut U64Result {
     let options = &mut *options;
     let options = file::CopyOptions {
         overwrite: options.overwrite,
@@ -618,7 +625,7 @@ pub unsafe extern "C" fn file_copy(from: *const c_char,
             }
         }
     }
-    let result = MoveResult {
+    let result = U64Result {
         is_error: is_error,
         error: err,
         ok: result,
@@ -631,7 +638,7 @@ pub unsafe extern "C" fn dir_move_with_progress(from: *const c_char,
                                                 to: *const c_char,
                                                 options: *mut CopyOptions,
                                                 cb: extern "C" fn(DirTransitProcess) -> uint8_t)
-                                                -> *mut MoveResult {
+                                                -> *mut U64Result {
     let options = &mut *options;
     let options = dir::CopyOptions {
         overwrite: options.overwrite,
@@ -695,7 +702,7 @@ pub unsafe extern "C" fn dir_move_with_progress(from: *const c_char,
             }
         }
     }
-    let result = MoveResult {
+    let result = U64Result {
         is_error: is_error,
         error: err,
         ok: result,
@@ -708,7 +715,7 @@ pub unsafe extern "C" fn dir_copy_with_progress(from: *const c_char,
                                                 to: *const c_char,
                                                 options: *mut CopyOptions,
                                                 cb: extern "C" fn(DirTransitProcess) -> uint8_t)
-                                                -> *mut MoveResult {
+                                                -> *mut U64Result {
     let options = &mut *options;
     let options = dir::CopyOptions {
         overwrite: options.overwrite,
@@ -772,7 +779,7 @@ pub unsafe extern "C" fn dir_copy_with_progress(from: *const c_char,
             }
         }
     }
-    let result = MoveResult {
+    let result = U64Result {
         is_error: is_error,
         error: err,
         ok: result,
@@ -787,7 +794,7 @@ pub unsafe extern "C" fn file_move_with_progress(from: *const c_char,
                                                  to: *const c_char,
                                                  options: *mut CopyOptions,
                                                  cb: extern "C" fn(file::TransitProcess))
-                                                 -> *mut MoveResult {
+                                                 -> *mut U64Result {
     let options = &mut *options;
     let options = file::CopyOptions {
         overwrite: options.overwrite,
@@ -840,7 +847,7 @@ pub unsafe extern "C" fn file_move_with_progress(from: *const c_char,
             }
         }
     }
-    let result = MoveResult {
+    let result = U64Result {
         is_error: is_error,
         error: err,
         ok: result,
@@ -854,7 +861,7 @@ pub unsafe extern "C" fn file_copy_with_progress(from: *const c_char,
                                                  to: *const c_char,
                                                  options: *mut CopyOptions,
                                                  cb: extern "C" fn(file::TransitProcess))
-                                                 -> *mut MoveResult {
+                                                 -> *mut U64Result {
     let options = &mut *options;
     let options = file::CopyOptions {
         overwrite: options.overwrite,
@@ -907,7 +914,7 @@ pub unsafe extern "C" fn file_copy_with_progress(from: *const c_char,
             }
         }
     }
-    let result = MoveResult {
+    let result = U64Result {
         is_error: is_error,
         error: err,
         ok: result,
@@ -925,7 +932,7 @@ pub unsafe extern "C" fn file_copy_with_progress_free(value: *mut DetailsEntryRe
 pub unsafe extern "C" fn file_move(from: *const c_char,
                                    to: *const c_char,
                                    options: *mut CopyOptions)
-                                   -> *mut MoveResult {
+                                   -> *mut U64Result {
     let options = &mut *options;
     let options = file::CopyOptions {
         overwrite: options.overwrite,
@@ -978,7 +985,7 @@ pub unsafe extern "C" fn file_move(from: *const c_char,
             }
         }
     }
-    let result = MoveResult {
+    let result = U64Result {
         is_error: is_error,
         error: err,
         ok: result,
@@ -991,7 +998,7 @@ pub unsafe extern "C" fn copy_items(from_list: *const *const c_char,
                                     from_size: size_t,
                                     to: *const c_char,
                                     options: *mut CopyOptions)
-                                    -> *mut MoveResult {
+                                    -> *mut U64Result {
     let options = &mut *options;
     let from = std::slice::from_raw_parts(from_list, from_size);
     let mut from_list = Vec::new();
@@ -1066,7 +1073,7 @@ pub unsafe extern "C" fn copy_items(from_list: *const *const c_char,
             }
         }
     }
-    let result = MoveResult {
+    let result = U64Result {
         is_error: is_error,
         error: err,
         ok: result,
@@ -1080,7 +1087,7 @@ pub unsafe extern "C" fn move_items(from_list: *const *const c_char,
                                     from_size: size_t,
                                     to: *const c_char,
                                     options: *mut CopyOptions)
-                                    -> *mut MoveResult {
+                                    -> *mut U64Result {
     let options = &mut *options;
     let from = std::slice::from_raw_parts(from_list, from_size);
     let mut from_list = Vec::new();
@@ -1155,10 +1162,572 @@ pub unsafe extern "C" fn move_items(from_list: *const *const c_char,
             }
         }
     }
-    let result = MoveResult {
+    let result = U64Result {
         is_error: is_error,
         error: err,
         ok: result,
+    };
+    Box::into_raw(Box::new(result))
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn copy_items_with_progress(from_list: *const *const c_char,
+                                                  from_size: size_t,
+                                                  to: *const c_char,
+                                                  options: *mut CopyOptions,
+                                                  cb: extern "C" fn(DirTransitProcess) -> uint8_t)
+                                                  -> *mut U64Result {
+    let options = &mut *options;
+    let from = std::slice::from_raw_parts(from_list, from_size);
+    let mut from_list = Vec::new();
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+
+    for path in from {
+        if let Some(path) = path.as_ref() {
+            match CStr::from_ptr(path).to_str() {
+                Ok(val) => from_list.push(val),
+                Err(msg) => {
+                    is_error = true;
+                    break;
+                }
+            }
+        } else {
+            is_error = true;
+            break;
+
+        }
+    }
+
+    if is_error {
+        err = Error {
+            kind: get_c_string("Invalid from path").into_raw(),
+            message: get_c_string("Invalid from path").into_raw(),
+        };
+
+    };
+
+    let options = dir::CopyOptions {
+        overwrite: options.overwrite,
+        skip_exist: options.skip_exist,
+        buffer_size: options.buffer_size,
+    };
+
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+    let mut result = 0;
+    let to_path: &str;
+
+    match CStr::from_ptr(to).to_str() {
+        Ok(val) => to_path = val,
+        Err(msg) => {
+            to_path = "";
+            is_error = true;
+            err = Error {
+                kind: get_c_string("Invalid to path").into_raw(),
+                message: get_c_string("Invalid to path").into_raw(),
+            };
+        }
+    }
+
+
+    if !is_error {
+        let handle = |process_info: fs_extra::TransitProcess| {
+            let p_info = DirTransitProcess {
+                copied_bytes: process_info.copied_bytes,
+                total_bytes: process_info.total_bytes,
+                file_bytes_copied: process_info.file_bytes_copied,
+                file_total_bytes: process_info.file_total_bytes,
+                file_name: get_c_string(process_info.file_name.as_str()).into_raw(),
+                state: get_int_transit_state(process_info.state),
+            };
+
+            get_enum_transit_result(cb(p_info))
+        };
+
+
+        match fs_extra::copy_items_with_progress(&from_list, to_path, &options, handle) {
+            Ok(copied_bytes) => {
+                result = copied_bytes;
+            }
+            Err(err_item) => {
+                is_error = true;
+                err = Error {
+                    kind: get_c_string(format!("{:?}", err_item.kind).as_str()).into_raw(),
+                    message: get_c_string(format!("{}", err_item.to_string()).as_str()).into_raw(),
+                }
+            }
+        }
+    }
+    let result = U64Result {
+        is_error: is_error,
+        error: err,
+        ok: result,
+    };
+    Box::into_raw(Box::new(result))
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn move_items_with_progress(from_list: *const *const c_char,
+                                                  from_size: size_t,
+                                                  to: *const c_char,
+                                                  options: *mut CopyOptions,
+                                                  cb: extern "C" fn(DirTransitProcess) -> uint8_t)
+                                                  -> *mut U64Result {
+    let options = &mut *options;
+    let from = std::slice::from_raw_parts(from_list, from_size);
+    let mut from_list = Vec::new();
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+
+    for path in from {
+        if let Some(path) = path.as_ref() {
+            match CStr::from_ptr(path).to_str() {
+                Ok(val) => from_list.push(val),
+                Err(msg) => {
+                    is_error = true;
+                    break;
+                }
+            }
+        } else {
+            is_error = true;
+            break;
+
+        }
+    }
+
+    if is_error {
+        err = Error {
+            kind: get_c_string("Invalid from path").into_raw(),
+            message: get_c_string("Invalid from path").into_raw(),
+        };
+
+    };
+
+    let options = dir::CopyOptions {
+        overwrite: options.overwrite,
+        skip_exist: options.skip_exist,
+        buffer_size: options.buffer_size,
+    };
+
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+    let mut result = 0;
+    let to_path: &str;
+
+    match CStr::from_ptr(to).to_str() {
+        Ok(val) => to_path = val,
+        Err(msg) => {
+            to_path = "";
+            is_error = true;
+            err = Error {
+                kind: get_c_string("Invalid to path").into_raw(),
+                message: get_c_string("Invalid to path").into_raw(),
+            };
+        }
+    }
+
+
+    if !is_error {
+        let handle = |process_info: fs_extra::TransitProcess| {
+            let p_info = DirTransitProcess {
+                copied_bytes: process_info.copied_bytes,
+                total_bytes: process_info.total_bytes,
+                file_bytes_copied: process_info.file_bytes_copied,
+                file_total_bytes: process_info.file_total_bytes,
+                file_name: get_c_string(process_info.file_name.as_str()).into_raw(),
+                state: get_int_transit_state(process_info.state),
+            };
+
+            get_enum_transit_result(cb(p_info))
+        };
+
+
+        match fs_extra::move_items_with_progress(&from_list, to_path, &options, handle) {
+            Ok(copied_bytes) => {
+                result = copied_bytes;
+            }
+            Err(err_item) => {
+                is_error = true;
+                err = Error {
+                    kind: get_c_string(format!("{:?}", err_item.kind).as_str()).into_raw(),
+                    message: get_c_string(format!("{}", err_item.to_string()).as_str()).into_raw(),
+                }
+            }
+        }
+    }
+    let result = U64Result {
+        is_error: is_error,
+        error: err,
+        ok: result,
+    };
+    Box::into_raw(Box::new(result))
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn file_remove(path: *const c_char) -> *mut U64Result {
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+
+    let remove_path: &str;
+    match CStr::from_ptr(path).to_str() {
+        Ok(val) => remove_path = val,
+        Err(msg) => {
+            remove_path = "";
+            is_error = true;
+            err = Error {
+                kind: get_c_string("Invalid from path").into_raw(),
+                message: get_c_string("Invalid from path").into_raw(),
+            };
+        }
+    }
+
+
+    match file::remove(remove_path) {
+        Ok(()) => {}
+        Err(err_item) => {
+            is_error = true;
+            err = Error {
+                kind: get_c_string(format!("{:?}", err_item.kind).as_str()).into_raw(),
+                message: get_c_string(format!("{}", err_item.to_string()).as_str()).into_raw(),
+            }
+        }
+    }
+    let result = U64Result {
+        is_error: is_error,
+        error: err,
+        ok: 0,
+    };
+    Box::into_raw(Box::new(result))
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn dir_remove(path: *const c_char) -> *mut U64Result {
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+
+    let remove_path: &str;
+    match CStr::from_ptr(path).to_str() {
+        Ok(val) => remove_path = val,
+        Err(msg) => {
+            remove_path = "";
+            is_error = true;
+            err = Error {
+                kind: get_c_string("Invalid from path").into_raw(),
+                message: get_c_string("Invalid from path").into_raw(),
+            };
+        }
+    }
+
+
+    match dir::remove(remove_path) {
+        Ok(()) => {}
+        Err(err_item) => {
+            is_error = true;
+            err = Error {
+                kind: get_c_string(format!("{:?}", err_item.kind).as_str()).into_raw(),
+                message: get_c_string(format!("{}", err_item.to_string()).as_str()).into_raw(),
+            }
+        }
+    }
+    let result = U64Result {
+        is_error: is_error,
+        error: err,
+        ok: 0,
+    };
+    Box::into_raw(Box::new(result))
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn remove_items(path_list: *const *const c_char,
+                                      path_size: size_t)
+                                      -> *mut U64Result {
+    let path_list = std::slice::from_raw_parts(path_list, path_size);
+
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+
+    let remove_path: &str;
+    let mut paths = Vec::new();
+    for path in path_list {
+        if let Some(path) = path.as_ref() {
+            match CStr::from_ptr(path).to_str() {
+                Ok(val) => paths.push(val),
+                Err(msg) => {
+                    is_error = true;
+                    break;
+                }
+            }
+        } else {
+            is_error = true;
+            break;
+
+        }
+    }
+
+
+    match fs_extra::remove_items(&paths) {
+        Ok(()) => {}
+        Err(err_item) => {
+            is_error = true;
+            err = Error {
+                kind: get_c_string(format!("{:?}", err_item.kind).as_str()).into_raw(),
+                message: get_c_string(format!("{}", err_item.to_string()).as_str()).into_raw(),
+            }
+        }
+    }
+    let result = U64Result {
+        is_error: is_error,
+        error: err,
+        ok: 0,
+    };
+    Box::into_raw(Box::new(result))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn dir_create(path: *const c_char, erase: bool) -> *mut U64Result {
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+
+    let create_path: &str;
+    match CStr::from_ptr(path).to_str() {
+        Ok(val) => create_path = val,
+        Err(msg) => {
+            create_path = "";
+            is_error = true;
+            err = Error {
+                kind: get_c_string("Invalid from path").into_raw(),
+                message: get_c_string("Invalid from path").into_raw(),
+            };
+        }
+    }
+
+
+    match dir::create(create_path, erase) {
+        Ok(()) => {}
+        Err(err_item) => {
+            is_error = true;
+            err = Error {
+                kind: get_c_string(format!("{:?}", err_item.kind).as_str()).into_raw(),
+                message: get_c_string(format!("{}", err_item.to_string()).as_str()).into_raw(),
+            }
+        }
+    }
+    let result = U64Result {
+        is_error: is_error,
+        error: err,
+        ok: 0,
+    };
+    Box::into_raw(Box::new(result))
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn dir_create_all(path: *const c_char, erase: bool) -> *mut U64Result {
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+
+    let create_path: &str;
+    match CStr::from_ptr(path).to_str() {
+        Ok(val) => create_path = val,
+        Err(msg) => {
+            create_path = "";
+            is_error = true;
+            err = Error {
+                kind: get_c_string("Invalid from path").into_raw(),
+                message: get_c_string("Invalid from path").into_raw(),
+            };
+        }
+    }
+
+
+    match dir::create_all(create_path, erase) {
+        Ok(()) => {}
+        Err(err_item) => {
+            is_error = true;
+            err = Error {
+                kind: get_c_string(format!("{:?}", err_item.kind).as_str()).into_raw(),
+                message: get_c_string(format!("{}", err_item.to_string()).as_str()).into_raw(),
+            }
+        }
+    }
+    let result = U64Result {
+        is_error: is_error,
+        error: err,
+        ok: 0,
+    };
+    Box::into_raw(Box::new(result))
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn file_write_all(path: *const c_char,
+                                        content: *const c_char)
+                                        -> *mut U64Result {
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+
+    let create_path: &str;
+    match CStr::from_ptr(path).to_str() {
+        Ok(val) => create_path = val,
+        Err(msg) => {
+            create_path = "";
+            is_error = true;
+            err = Error {
+                kind: get_c_string("Invalid from path").into_raw(),
+                message: get_c_string("Invalid from path").into_raw(),
+            };
+        }
+    }
+    let file_content: &str;
+    match CStr::from_ptr(content).to_str() {
+        Ok(val) => file_content = val,
+        Err(msg) => {
+            file_content = "";
+            is_error = true;
+            err = Error {
+                kind: get_c_string("Invalid from path").into_raw(),
+                message: get_c_string("Invalid from path").into_raw(),
+            };
+        }
+    }
+
+
+    match file::write_all(create_path, file_content) {
+        Ok(()) => {}
+        Err(err_item) => {
+            is_error = true;
+            err = Error {
+                kind: get_c_string(format!("{:?}", err_item.kind).as_str()).into_raw(),
+                message: get_c_string(format!("{}", err_item.to_string()).as_str()).into_raw(),
+            }
+        }
+    }
+    let result = U64Result {
+        is_error: is_error,
+        error: err,
+        ok: 0,
+    };
+    Box::into_raw(Box::new(result))
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn dir_get_size(path: *const c_char) -> *mut U64Result {
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+
+    let dir_path: &str;
+    match CStr::from_ptr(path).to_str() {
+        Ok(val) => dir_path = val,
+        Err(msg) => {
+            dir_path = "";
+            is_error = true;
+            err = Error {
+                kind: get_c_string("Invalid from path").into_raw(),
+                message: get_c_string("Invalid from path").into_raw(),
+            };
+        }
+    }
+
+
+    let result: u64;
+    match dir::get_size(dir_path) {
+        Ok(val) => result = val,
+        Err(err_item) => {
+            result = 0;
+            is_error = true;
+            err = Error {
+                kind: get_c_string(format!("{:?}", err_item.kind).as_str()).into_raw(),
+                message: get_c_string(format!("{}", err_item.to_string()).as_str()).into_raw(),
+            }
+        }
+    }
+    let result = U64Result {
+        is_error: is_error,
+        error: err,
+        ok: result,
+    };
+    Box::into_raw(Box::new(result))
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn file_read_to_string(path: *const c_char) -> *mut CStringResult {
+    let mut is_error = false;
+    let mut err = Error {
+        kind: get_c_string("").into_raw(),
+        message: get_c_string("").into_raw(),
+    };
+
+    let file_path: &str;
+    match CStr::from_ptr(path).to_str() {
+        Ok(val) => file_path = val,
+        Err(msg) => {
+            file_path = "";
+            is_error = true;
+            err = Error {
+                kind: get_c_string("Invalid from path").into_raw(),
+                message: get_c_string("Invalid from path").into_raw(),
+            };
+        }
+    }
+
+
+    let result: CString;
+    match file::read_to_string(file_path) {
+        Ok(val) => result = get_c_string(val.as_str()),
+        Err(err_item) => {
+            result = get_c_string("");
+            is_error = true;
+            err = Error {
+                kind: get_c_string(format!("{:?}", err_item.kind).as_str()).into_raw(),
+                message: get_c_string(format!("{}", err_item.to_string()).as_str()).into_raw(),
+            }
+        }
+    }
+    let result = CStringResult {
+        is_error: is_error,
+        error: err,
+        ok: result.into_raw(),
     };
     Box::into_raw(Box::new(result))
 }
